@@ -1,25 +1,19 @@
 package sendemail;
 
 import java.util.*;
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.*;
 
 public class EmailService {
-    private static final String myAccountEmail = "";
-    private static final String password = "";
-    private static String subject;
-    private static String body;
+    private static final String myAccountEmail = "iwan.boyan03@gmail.com";
+    private static final String password = "iozahompfvhknffw";
+    private static String file;
 
 
-    public static void setSubject(String subject) {
-        EmailService.subject = subject;
-    }
-
-    public static void setBody(String body) {
-        EmailService.body = body;
-    }
-
-    public static void sendEmail(String to) {
+    public static void sendEmail(String to, String subject, String body) {
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
@@ -27,7 +21,7 @@ public class EmailService {
         properties.put("mail.smtp.port", "587");
 
         //set-up email
-        Session session = Session.getInstance(properties, new Authenticator() {
+        Session session =  Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(myAccountEmail, password);
@@ -35,10 +29,16 @@ public class EmailService {
         });
 
         //call method prepareMessage
-        Message message = prepareMessage(session, to);
+        Message message = prepareMessage(session, to, subject, body);
     }
 
-    private static Message prepareMessage(Session session, String to) {
+    public static void sendEmail(String to, String subject, String body, String filePath) {
+        file = filePath;
+
+        sendEmail(to, subject, body);
+    }
+
+    private static Message prepareMessage(Session session, String to, String subject, String body) {
 
         System.out.println("Loading...");
 
@@ -55,7 +55,34 @@ public class EmailService {
             // Set Subject: header field
             message.setSubject(subject);
 
-            message.setContent(body, "text/html");
+            //check filePath exist
+            if(file == null) {
+                message.setContent(body, "text/html");
+            }else {
+                // Create the message part
+                BodyPart messageBodyPart = new MimeBodyPart();
+
+                // Fill the message
+                messageBodyPart.setContent(body, "text/html");
+
+                // Create a multipar message
+                Multipart multipart = new MimeMultipart();
+
+                // Set text message part
+                multipart.addBodyPart(messageBodyPart);
+
+                // Part two is attachment
+                messageBodyPart = new MimeBodyPart();
+                String filename = file;
+                DataSource source = new FileDataSource(filename);
+                messageBodyPart.setDataHandler(new DataHandler(source));
+                messageBodyPart.setFileName(filename);
+                multipart.addBodyPart(messageBodyPart);
+
+                // Send the complete message parts
+                message.setContent(multipart );
+                file = null;
+            }
 
             // Send message
             Transport.send(message);
