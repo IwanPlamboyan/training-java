@@ -8,8 +8,8 @@ import javax.mail.*;
 import javax.mail.internet.*;
 
 public class EmailService {
-    private static final String myAccountEmail = "iwan.boyan03@gmail.com";
-    private static final String password = "iozahompfvhknffw";
+    private static final String myAccountEmail = "email@gmail.com";
+    private static final String password = "*****";
     private static String file;
 
 
